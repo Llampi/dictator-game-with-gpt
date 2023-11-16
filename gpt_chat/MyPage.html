@@ -1,0 +1,130 @@
+{{ block title }}
+    Chat
+{{ endblock }}
+{{ block content }}
+
+
+<head>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.chat-window {
+    width: 50%;
+    border: 1px solid #ccc;
+    margin: 50px auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-header {
+    
+    background-color: #3498db;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+.chat-body {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.chat-footer {
+    display: flex;
+    padding: 10px;
+}
+
+#messageInput {
+    flex: 1;
+    padding: 5px;
+}
+
+button {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+    </style>
+</head>
+<body>
+    <div class="chat-window">
+        <div class="chat-header">
+            
+        </div>
+        <div class="chat-body" id="chatBody">
+            <!-- Aquí se mostrarán los mensajes -->
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="messageInput" placeholder="Escribe tu mensaje...">
+            <input type="button" onclick="sendMessage()" value="Enviar"></input>
+        </div>
+    </div>
+
+    
+</body>
+
+    
+<script>
+
+gptName = "Gpt"
+myName = "Yo"
+
+
+function sendMessage() {
+    var messageInput = document.getElementById("messageInput");
+    var message = messageInput.value;
+    agregar_mesaje_de_usuario(message)
+    
+
+    liveSend(message);
+}
+
+
+function liveRecv(data) {
+    console.log('received a message!', data);
+    // your code goes here
+    message = data
+    agregar_mesaje_de_gpt(message)
+}
+
+
+function agregar_mesaje_de_gpt(message)
+{
+    agregar_nueva_linea_al_chat(message,gptName)
+}
+
+function agregar_mesaje_de_usuario(message)
+{
+    agregar_nueva_linea_al_chat(message, myName)
+}
+
+function agregar_nueva_linea_al_chat(message, nick)
+{
+    if (message.trim() !== "") {
+        var chatBody = document.getElementById("chatBody");
+        var newMessage = document.createElement("div");
+        newMessage.className = "message";
+        newMessage.textContent = nick +  ": " + message;
+
+        chatBody.appendChild(newMessage);
+
+        // Limpiar el cuadro de entrada después de enviar el mensaje
+        messageInput.value = "";
+
+        // Hacer scroll hacia abajo para mostrar el nuevo mensaje
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+}
+</script>
+{{player.chat}}
+    
+    {{ next_button }}
+
+{{ endblock }}

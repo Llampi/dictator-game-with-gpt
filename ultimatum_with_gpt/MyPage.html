@@ -1,0 +1,233 @@
+{{ block title }}
+    
+{{ endblock }}
+{{ block content }}
+
+<div class="container">
+    
+    <div>
+        <div class="row">Dictador game</div>
+        <div class="row">
+            <div class="col col-6">
+                
+                <div class="row">
+                    {{ if player.role == "No Dictator" }}
+                        Chat con "Dictador"
+                    {{else}}
+                        Chat con "No Dictador"
+                    {{endif}}
+                </div>
+                <div class="row">
+                    {{ chat nickname=player.role }}</div>
+                <div class="row">
+                    {% if player.role == 'No Dictator' %}
+                        <div class="col">Haz una oferta:</div>
+                        <div class="col"><input type="text" value="" id = "offer_input"> </input></div>
+                        <div class="col"><input type="button" value="Send" onclick="sendOffer()">  </input></div>
+                        
+                    {% else %}
+                        <div id="oferta_recibida_contenedor" class="row" style="display: none;">
+                            <div class="row">
+                                <div class="col-3">Oferta recibida :</div>
+                                
+                                <div class="col-3" id="" style=""> <span id="oferta_recibida"></span> </div>
+                            
+                                <div class="col-6">
+                                    <input type="button" value="aceptar" id="aceptar_oferta" onclick="aceptarOferta()">  </input>
+                                    <input type="button" value="rechazar" id="rechazar_oferta" onclick="rechazarOferta()">  </input>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+                            <div class="row">Tienes 100 puntos, elige la cantidad de puntos con la que quieres quedarte:</div>
+                            <div class="row">
+                                <div class="col"> <input type="text" value="" id="kept_points"> </input> </div>
+                                <div class="col"> <input type="button" value="continuar" onclick="reservarPuntos('kept_points')"> </input> </div>
+                            </div>
+                        </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+            <div class="col col-6">Chat con el bot
+                <div class=" otree-chat">
+                    <div class="chatBody">
+                        
+                    
+                    <div class="chat-body" >
+                        <div class=" otree-chat__messages" id="chatBody">
+                        
+                        </div>
+                        <!-- Aquí se mostrarán los mensajes -->
+                    </div>
+                    
+                        
+                    </div>
+                    <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." size="40">
+                        <input type="button" onclick="sendMessage()" value="Enviar" class="otree-chat__btn-send"></input>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+
+    </div>
+</div>
+
+
+    {{ formfields }}
+    {{ next_button }}
+
+
+<script>
+    function liveRecv(data) {
+        if(data.type == 'chat_gpt')
+        {
+            console.log('received a message!', data.message);
+            // your code goes here
+            message = data.message
+            agregar_mesaje_de_gpt(message)
+        }
+        else
+        {
+            if('{{player.role}}' == 'No Dictator')
+            {
+                console.log('No dictador recibe mensaje!', data);
+            }
+            else if (('{{player.role}}' == 'Dictator'))
+            {   
+                mostrar_oferta_recibida(data)
+                console.log('Dictador recibe mensaje!', data);
+            }
+        }
+        
+    
+    // your code goes here
+}
+    function sendOffer()
+    {
+        offer_message = document.getElementById("offer_input")
+        offer_message = offer_message.value
+        liveSend({'type': 'propose', 'offer': parseInt(offer_message) });
+        console.log(offer_message)
+    }
+    function mostrar_oferta_recibida(data)
+    {
+        //mostarr contenedoar
+        contenedor = document.getElementById("oferta_recibida_contenedor")
+        contenedor.style.display = "block"
+
+        //asignar puntos
+        oferta_valor = document.getElementById("oferta_recibida")
+        oferta_valor.textContent =  data.offer
+        console.log(data.offer)
+
+    }
+
+    function aceptarOferta()
+    {
+        console.log("aceptado")
+        reservarPuntos('oferta_recibida')
+        
+    }
+
+    function rechazarOferta()
+    {
+        console.log("rechazado")
+    }
+    function reservarPuntos(id_puntos)
+    {
+        if(id_puntos == 'kept_points')
+        {
+            puntos_contenedor = document.getElementById(id_puntos)
+            puntos_contenedor = puntos_contenedor.value
+        }
+        
+
+        else if (id_puntos == 'oferta_recibida')
+        {
+            puntos_contenedor = document.getElementById(id_puntos);
+            puntos_contenedor = puntos_contenedor.innerText; 
+
+        }
+        else {puntos_contenedor = 0}
+        console.log(puntos_contenedor)
+
+
+        pasar_pagina()
+    }
+
+    function pasar_pagina()
+    {
+        console.log('No se encontró ningún botón con esa clase.');
+        var botones = document.querySelectorAll('.otree-btn-next');
+        if (botones.length > 0) {
+            botones[0].click(); 
+        } else {
+            console.log('No se encontró ningún botón con esa clase.');
+        }
+    }
+</script>
+
+
+
+<script>
+    //all for gpt
+    
+gptName = "Gpt"
+myName = "Yo"
+
+
+function sendMessage() {
+    var messageInput = document.getElementById("messageInput");
+    var message = messageInput.value;
+    agregar_mesaje_de_usuario(message)
+    
+
+    liveSend({'type': 'chat_gpt', 'message': message });
+    //liveSend(message);
+}
+
+/*
+function liveRecv(data) {
+    console.log('received a message!', data.message);
+    // your code goes here
+    message = data.message
+    agregar_mesaje_de_gpt(message)
+}
+*/
+
+function agregar_mesaje_de_gpt(message)
+{
+    agregar_nueva_linea_al_chat(message,gptName)
+}
+
+function agregar_mesaje_de_usuario(message)
+{
+    agregar_nueva_linea_al_chat(message, myName)
+}
+
+function agregar_nueva_linea_al_chat(message, nick)
+{
+    if (message.trim() !== "") {
+        var chatBody = document.getElementById("chatBody");
+        var newMessage = document.createElement("div");
+        newMessage.className = "message";
+        newMessage.textContent = nick +  ": " + message;
+
+        chatBody.appendChild(newMessage);
+
+        // Limpiar el cuadro de entrada después de enviar el mensaje
+        messageInput.value = "";
+
+        // Hacer scroll hacia abajo para mostrar el nuevo mensaje
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+}
+</script>
+
+{{ endblock }}
