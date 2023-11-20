@@ -3,76 +3,131 @@
 {{ endblock }}
 {{ block content }}
 
+<br>
+
 <div class="container">
-    
     <div>
-        <div class="row">Dictador game</div>
-        <div class="row">
-            <div class="col col-6">
+        <div class="row border border-2  border-dark p-4"> 
+            <div class="col-4 text-center"><b>Segment:</b> {{player.round_number}} </div>
+            <div class="col-4 text-center"><b>Period:</b> {{player.periodo}}</div>
+            <div class="col-4 text-center"><b>Session code:</b>   {{player.session.code}} </div>
+        </div>
+        <div class="row mt-4"></div>
+        <div class="row border mb-4">
+            <div class="col col-6 border border-2  border-dark p-4">
                 
-                <div class="row">
-                    {{ if player.role == "No Dictator" }}
-                        Chat con "Dictador"
+                <div class="row pb-3">
+                    
+                    {{ if player.role == "Receiver" }}
+                        <p>Chat with <b>Sender</b>: 
                     {{else}}
-                        Chat con "No Dictador"
+                        <p>Chat with <b>Receiver</b></p>
                     {{endif}}
                 </div>
-                <div class="row">
-                    {{ chat nickname=player.role }}</div>
-                <div class="row">
-                    {% if player.role == 'No Dictator' %}
-                        <div class="col">Haz una oferta:</div>
-                        <div class="col"><input type="text" value="" id = "offer_input"> </input></div>
-                        <div class="col"><input type="button" value="Send" onclick="sendOffer()">  </input></div>
-                        
+                <div class="row">{{ chat nickname=player.role }}</div>
+                
+                
+                    {% if player.role == 'Receiver' %}
+                    <div class="row border border-2 border-dark border-start-0 border-end-0 border-bottom-0 mt-4 p-3 pt-4">
+                        <div class="row mb-4">Interaction with Sender:</div>
+                        <div class="row " id="unmade_offer">
+                            <div class="col">Make an offer:</div>
+                            <div class="col"><input type="text" value="" id = "offer_input"> </input></div>
+                            <div class="col"><input type="button" value="Send" id="offer_input_button" onclick="sendOffer()">  </input></div>
+                        </div>
+                        <div class="row" id="offer_made" style="display: none;"> You already made an offer</div>
+                        <div class="row" id="offer_response" style="display: none;"> </div>
+                    </div>
                     {% else %}
-                        <div id="oferta_recibida_contenedor" class="row" style="display: none;">
+                    <div class="row border border-2 border-dark border-start-0 border-end-0 border-bottom-0 mt-4 p-3 pt-4" id="oferta_recibida_contenedor" style="display: none;">
+                        <div class="row mb-4" >Interaction with Receiver:</div>
+                        <div id="" class="row" >
                             <div class="row">
-                                <div class="col-3">Oferta recibida :</div>
+                                <div class="col-3">Offer received :</div>
                                 
                                 <div class="col-3" id="" style=""> <span id="oferta_recibida"></span> </div>
                             
-                                <div class="col-6">
-                                    <input type="button" value="aceptar" id="aceptar_oferta" onclick="aceptarOferta()">  </input>
-                                    <input type="button" value="rechazar" id="rechazar_oferta" onclick="rechazarOferta()">  </input>
+                                <div class="col-6" id="botones_aceptar_rechazar">
+                                    <input type="button" value="Accept" id="aceptar_oferta" onclick="aceptarOferta()">  </input>
+                                    <input type="button" value="Reject" id="rechazar_oferta" onclick="rechazarOferta()">  </input>
                                 </div>
                             </div>
 
                         </div>
+                    </div>
+                    <div class="row border border-2 border-dark border-start-0 border-end-0 border-bottom-0 mt-4 p-3 pt-4">
 
+                    
                         <div class="row">
-                            <div class="row">Tienes 100 puntos, elige la cantidad de puntos con la que quieres quedarte:</div>
+                            <div class="row mb-4">You have 100 points, choose the amount of points you want to keep:</div>
+                            
                             <div class="row">
                                 <div class="col"> <input type="text" value="" id="kept_points"> </input> </div>
-                                <div class="col"> <input type="button" value="continuar" onclick="reservarPuntos('kept_points')"> </input> </div>
+                                <div class="col"> <input type="button" value="Continue" id="button_continue" onclick="reservarPuntos('kept_points')"> </input> </div>
                             </div>
                         </div>
-
+                    </div>
                     {% endif %}
 
-                </div>
+                
+                
+
+               
             </div>
-            <div class="col col-6">Chat con el bot
+            <div class="col col-6 border border-2 border-start-0  border-dark p-4">
+                <div class="row pb-3" ><p>Chat with <b>gpt</b>:</div>
                 <div class=" otree-chat">
                     <div class="chatBody">
                         
                     
-                    <div class="chat-body" >
-                        <div class=" otree-chat__messages" id="chatBody">
-                        
+                        <div class="chat-body" >
+                            <div class=" otree-chat__messages" id="chatBody">
+                            
+                            </div>
+                            <!-- Aquí se mostrarán los mensajes -->
                         </div>
-                        <!-- Aquí se mostrarán los mensajes -->
-                    </div>
                     
                         
                     </div>
-                    <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." size="40">
+                    <div>
+                        <input type="text" id="messageInput" placeholder="" size="40"></input>
                         <input type="button" onclick="sendMessage()" value="Enviar" class="otree-chat__btn-send"></input>
                     </div>
                 </div>
                 
             </div>
         </div>
+        <div class="row mt-4"></div>
+        <div class="row border border-2 border-dark p-4 ">
+            <div class="row "> <div class="col-12 text-center"> <b>History</b> </div> </div>
+
+            <div class="row text-center mt-4">
+                <div class="col">
+                    <table class="table">
+                        <thead>
+                          <tr>
+                            <th scope="col">Segment</th>
+                            <th scope="col">Period</th>
+                            <th scope="col">Points</th>
+                            <th scope="col">Role</th>
+                          </tr>
+                        </thead>
+                        <tbody id="historial">
+                          <tr>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                          </tr>
+                          
+                        </tbody>
+                      </table>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="row mt-4"></div>
         
 
     </div>
@@ -92,13 +147,38 @@
             message = data.message
             agregar_mesaje_de_gpt(message)
         }
+        else if (data.type == 'response')
+        {
+            if (data.response == 'reject')
+            {   if('{{player.role}}' == 'Receiver')
+                {
+                    console.log('sender ha rechazado')
+                    mensaje_rechazo = "Sender has rejected your offer"
+                    contenedor_mensaje_rechazo = document.getElementById('offer_response')
+                    contenedor_mensaje_rechazo.innerHTML = mensaje_rechazo
+                    contenedor_mensaje_rechazo.style.display = "block"
+                }
+                
+            }
+            else if(data.response = 'accept')
+                console.log('sender ha aceptado')
+        }
+        else if (data.type == 'sender_send')
+        {
+            if('{{player.role}}' == 'Receiver')
+            {
+                ocultar_make_offer()
+            }
+            
+            guardar_historial(data)
+        }
         else
         {
-            if('{{player.role}}' == 'No Dictator')
+            if('{{player.role}}' == 'Receiver')
             {
                 console.log('No dictador recibe mensaje!', data);
             }
-            else if (('{{player.role}}' == 'Dictator'))
+            else if (('{{player.role}}' == 'Sender'))
             {   
                 mostrar_oferta_recibida(data)
                 console.log('Dictador recibe mensaje!', data);
@@ -110,6 +190,8 @@
 }
     function sendOffer()
     {
+        
+        mostrarMensajeOfertaRealizada()
         offer_message = document.getElementById("offer_input")
         offer_message = offer_message.value
         liveSend({'type': 'propose', 'offer': parseInt(offer_message) });
@@ -130,14 +212,25 @@
 
     function aceptarOferta()
     {
-        console.log("aceptado")
+        console.log("haz aceptado")
+        //reservarPuntos('oferta_recibida')
+        liveSend({'type': 'response', 'response': 'accept' });
+        reemplazar_botones_aceptar_rechazar('Accepted');
+
         reservarPuntos('oferta_recibida')
         
+
+
     }
 
     function rechazarOferta()
     {
-        console.log("rechazado")
+        console.log("haz rechazado")
+        liveSend({'type': 'response', 'response': 'reject' });
+        //reemplazar botones aceptar rechazar
+        reemplazar_botones_aceptar_rechazar('Rejected');
+        
+
     }
     function reservarPuntos(id_puntos)
     {
@@ -145,6 +238,17 @@
         {
             puntos_contenedor = document.getElementById(id_puntos)
             puntos_contenedor = puntos_contenedor.value
+
+            //bloquear las otras opciones
+                     
+            input_kept_points = document.getElementById(id_puntos)
+            
+            input_kept_points.disabled = true
+
+            input_button_continue = document.getElementById('button_continue')
+            input_button_continue.disabled = true
+
+            
         }
         
 
@@ -152,15 +256,26 @@
         {
             puntos_contenedor = document.getElementById(id_puntos);
             puntos_contenedor = puntos_contenedor.innerText; 
+            //bloquear las otras opciones
+  
+            
+            input_kept_points = document.getElementById('kept_points')
+            input_kept_points.value = puntos_contenedor
+            input_kept_points.disabled = true
+
+            input_button_continue = document.getElementById('button_continue')
+            input_button_continue.disabled = true
 
         }
         else {puntos_contenedor = 0}
+        
+        liveSend({'type': 'sender_send', 'puntos': puntos_contenedor, 'segmento': {{player.round_number}}, 'periodo': {{player.periodo}} });
         console.log(puntos_contenedor)
 
 
-        pasar_pagina()
+        //pasar_pagina()
     }
-
+    
     function pasar_pagina()
     {
         console.log('No se encontró ningún botón con esa clase.');
@@ -171,6 +286,103 @@
             console.log('No se encontró ningún botón con esa clase.');
         }
     }
+    function mostrarMensajeOfertaRealizada()
+    {
+        console.log("ocultar")
+        ocultar = document.getElementById('unmade_offer')
+        ocultar.style.display = "none";
+        mostrar = document.getElementById('offer_made')
+        mostrar.style.display = "block"
+        
+    }
+    function reemplazar_botones_aceptar_rechazar(resultado)
+    {
+        contenedor_de_botones = document.getElementById('botones_aceptar_rechazar')
+        contenedor_de_botones.innerHTML = resultado
+    }
+    var hist = {{historial}}
+    //var hist = JSON.parse(hist);
+    //console.log(hist[0].periodo)
+
+    function guardar_historial(data)
+    {
+        liveSend({'type': 'guardar_historial', 'puntos': data.puntos, 'segmento': data.segmento, 'periodo': data.periodo });
+    }
+    
+    
+  
+    function cargar_historial()
+    {
+        try{
+            var historial_segmentos_previos = {{historial}}
+            var historial_segmento_actual = {{player.historial}}
+        }
+        catch (error){
+            var historial_segmento_actual = []
+            var historial_segmento_actual = []
+            console.log("error al cargar historial")
+        }
+
+
+        
+
+        if(historial_segmentos_previos.length > 0 || historial_segmento_actual > 0)
+        {
+            var tabla = document.getElementById("historial");
+            tabla.innerHTML = ""
+            if (historial_segmentos_previos.length > 0)
+            {
+                
+                for(i = 0; i < historial_segmentos_previos.length; i ++)
+                {
+                    //console.log("segmentos precios")
+                    var nuevaFila = tabla.insertRow();
+                    var celda1 = nuevaFila.insertCell(0);
+                    var celda2 = nuevaFila.insertCell(1);
+                    var celda3 = nuevaFila.insertCell(2);
+                    var celda4 = nuevaFila.insertCell(3);
+
+                    celda1.innerHTML = historial_segmentos_previos[i].segmento;
+                    celda2.innerHTML = historial_segmentos_previos[i].periodo;
+                    celda3.innerHTML = historial_segmentos_previos[i].puntos;
+                    celda4.innerHTML = '{{player.role}}'
+                }
+            }
+/*
+            if(historial_segmento_actual.length > 0)
+            {
+                
+                
+                for(i = 0; i < historial_segmento_actual.length; i++)
+                {
+
+                    var nuevaFila = tabla.insertRow();
+
+                    var celda1 = nuevaFila.insertCell(0);
+                    var celda2 = nuevaFila.insertCell(1);
+                    var celda3 = nuevaFila.insertCell(2);
+                    var celda4 = nuevaFila.insertCell(3);
+
+                    celda1.innerHTML = historial_segmento_actual[i].segmento;
+                    celda2.innerHTML = historial_segmento_actual[i].periodo;
+                    celda3.innerHTML = historial_segmento_actual[i].puntos;
+                    celda4.innerHTML = '{{player.role}}'
+                }
+            } */
+        }
+
+        
+    }
+
+    function ocultar_make_offer()
+    {
+        input_offer = document.getElementById('offer_input')
+        input_offer.disabled = true
+
+        input_offer_button = document.getElementById('offer_input_button')
+        input_offer_button.disabled = true
+    }
+    cargar_historial()
 </script>
 
 

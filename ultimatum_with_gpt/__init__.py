@@ -1,10 +1,26 @@
 from otree.api import *
 
 
+#Configuracion del archivo csv: 
+import csv
+archivo_csv = 'config.csv'
+datos = []
+with open(archivo_csv, newline='') as csvfile:
+    lector_csv = csv.DictReader(csvfile)
+    for fila in lector_csv:
+        datos.append(fila)
+
+# Acceder a los valores
+segments = int(datos[0]['segments'])
+periods_per_segment = int(datos[0]['periods_per_segment'])
+endowment = datos[0]['endowment']
+
+
+
 #open ai and json
 import json
 from openai import OpenAI
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="")
 
 doc = """
 Your app description
@@ -27,9 +43,10 @@ messages=[
 class C(BaseConstants):
     NAME_IN_URL = 'ultimatum_with_gpt'
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 1
-    DICTATOR_ROLE = 'Dictator'
-    NO_DICTATOR_ROLE = 'No Dictator'
+    NUM_ROUNDS = segments
+    ENDOWMENT = endowment
+    DICTATOR_ROLE = 'Sender'
+    NO_DICTATOR_ROLE = 'Receiver'
 
 
 class Subsession(BaseSubsession):
@@ -41,8 +58,27 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
+    periodo = models.IntegerField(initial=0)
+    endowment = models.IntegerField(initial=C.ENDOWMENT)
+
     amount_proposed = models.IntegerField()
 
+
+    ##codigo para el historial:
+    historial = models.LongStringField(initial="")
+    _historial = models.StringField()
+
+    @property
+    def historial(self):
+        _historial = self.field_maybe_none('_historial')
+        if _historial is None:
+            return []
+        else:
+            return json.loads(_historial)
+
+    @historial.setter
+    def historial(self, value):
+        self._historial = json.dumps(value)
 
 
     ##codigo para el chat
@@ -65,10 +101,17 @@ class Player(BasePlayer):
 # PAGES
 
 class FirstWaitPage(WaitPage):
+
+
     
     ##gpt
     @staticmethod
     def after_all_players_arrive(group: Group):
+        ##periodos
+        for p in group.get_players():
+            p.periodo = 1
+
+        ##gpt
         for player in group.get_players():
             
             player.messages = initial_messages
@@ -78,9 +121,27 @@ class FirstWaitPage(WaitPage):
 
 
 class MyPage(Page):
+    
+    endowment = C.ENDOWMENT
+
     @staticmethod
     def vars_for_template(player: Player):
-        return dict(other_role=player.get_others_in_group()[0].role)
+        historial = []
+        try:
+            datos_en_rondas_previas = player.in_all_rounds()
+            for i in range(len(datos_en_rondas_previas)):
+                historial_de_periodo = datos_en_rondas_previas[i].historial
+                for j in range(len(historial_de_periodo)):
+                    historial.append(historial_de_periodo[j])
+                pass
+            
+
+            
+        except:
+            print("sin historial")
+            historial = []
+        print("historial: ", historial)
+        return dict(other_role=player.get_others_in_group()[0].role, historial = historial)
     
     @staticmethod
     def live_method(player, data):
@@ -137,7 +198,26 @@ class MyPage(Page):
             print("player messages: ",mensajes)
             return {player.id_in_group: data['message']}
             '''
+            
         #fin gpt
+
+        if data['type'] == 'response':
+            return {0: data}
+        
+        if data['type'] == 'sender_send':
+
+            return {player.id_in_group: data, player.get_others_in_group()[0].id_in_group:data}
+        
+        if data['type'] == 'guardar_historial':
+            segmento = data['segmento']
+            periodo = data['periodo']
+            puntos = data['puntos']
+            nueva_entrada_historial = {'segmento':segmento, 'periodo': periodo,'puntos': puntos}
+            historial = player.historial
+            historial.append(nueva_entrada_historial)
+            player.historial = historial
+            print("historial de usuario ", player.id_in_group, ": ",player.historial)
+            return {}
         return ()
     
     pass
@@ -145,11 +225,27 @@ class MyPage(Page):
 
 
 class ResultsWaitPage(WaitPage):
+    
+    @staticmethod
+    def after_all_players_arrive(group: Group):
+        for p in group.get_players():
+            p.periodo = p.periodo +1
+
+            
+            
+            #print("historial: "  ,p.historial)
     pass
 
 
 class Results(Page):
     pass
 
+#sequence = [InitPage]
+sequence = [FirstWaitPage]
+for i in range(periods_per_segment):
+    sequence.append(MyPage)
+    #sequence.append(Results)
+    sequence.append(ResultsWaitPage)
 
-page_sequence = [FirstWaitPage, MyPage, ResultsWaitPage, Results]
+#page_sequence = [FirstWaitPage, MyPage, ResultsWaitPage, Results]
+page_sequence = sequence
