@@ -20,7 +20,7 @@ endowment = datos[0]['endowment']
 #open ai and json
 import json
 from openai import OpenAI
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="")
 
 doc = """
 Your app description
