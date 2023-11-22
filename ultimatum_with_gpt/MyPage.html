@@ -90,8 +90,9 @@
                         
                     </div>
                     <div>
-                        <input type="text" id="messageInput" placeholder="" size="40"></input>
-                        <input type="button" onclick="sendMessage()" value="Enviar" class="otree-chat__btn-send"></input>
+                        <div class="row"><div style="" class="col-9"><textarea type="text" id="messageInput" class="text_area_input" style="width: 100%; resize:none" rows="1" placeholder="" ></textarea></div>
+                        <div class="col-3"><input type="button" onclick="sendMessage()" value="Send" class="otree-chat__btn-send"></input></div>
+                        </div>
                     </div>
                 </div>
                 
@@ -391,7 +392,7 @@
     //all for gpt
     
 gptName = "Gpt"
-myName = "Yo"
+myName = "{{player.role}}"
 
 
 function sendMessage() {
@@ -420,7 +421,7 @@ function agregar_mesaje_de_gpt(message)
 
 function agregar_mesaje_de_usuario(message)
 {
-    agregar_nueva_linea_al_chat(message, myName)
+    agregar_nueva_linea_al_chat(message, myName  + " (Me)")
 }
 
 function agregar_nueva_linea_al_chat(message, nick)
@@ -428,9 +429,22 @@ function agregar_nueva_linea_al_chat(message, nick)
     if (message.trim() !== "") {
         var chatBody = document.getElementById("chatBody");
         var newMessage = document.createElement("div");
+        //newMessage.className = "message";
+        //newMessage.textContent = nick +  ": " + message;
+        var newMessage = document.createElement('div');
         newMessage.className = "message";
-        newMessage.textContent = nick +  ": " + message;
+        var messageText = document.createElement('span');
+        messageText.textContent = message;
+        //messageText.style.fontWeight = 'bold'; // Hacer el texto en negrita
+        //messageText.style.color = 'blue'; // Cambiar el color del texto del nick
 
+        var nickElement = document.createElement('span');
+        nickElement.textContent = nick + " : ";
+        nickElement.style.fontWeight = 'bold'; // Hacer el nick en negrita
+        nickElement.style.color = '#c37a36'; // Cambiar el color del nick
+
+        newMessage.appendChild(nickElement);
+        newMessage.appendChild(messageText);
         chatBody.appendChild(newMessage);
 
         // Limpiar el cuadro de entrada después de enviar el mensaje
@@ -440,6 +454,87 @@ function agregar_nueva_linea_al_chat(message, nick)
         chatBody.scrollTop = chatBody.scrollHeight;
     }
 }
+
+
+
+
+
+var textarea = document.getElementById('messageInput');
+var limitRows = 3; // Máximo número de filas
+var messageLastScrollHeight = textarea.scrollHeight;
+
+textarea.oninput = function() {
+  var rows = parseInt(textarea.getAttribute("rows"));
+
+  // Si no disminuimos la cantidad de filas, el scrollHeight mostraría el scrollHeight para todas las filas
+  // incluso si no hay texto.
+  textarea.setAttribute("rows", "1");
+
+  if (rows < limitRows && textarea.scrollHeight > messageLastScrollHeight) {
+    rows++;
+  } else if (rows > 1 && textarea.scrollHeight < messageLastScrollHeight) {
+    rows--;
+  }
+
+  messageLastScrollHeight = textarea.scrollHeight;
+  textarea.setAttribute("rows", rows);
+};
+function convertirATextarea() {
+  // Obtener el input existente por su clase
+  var inputExistente = document.querySelector('.otree-chat__input');
+
+  // Verificar si se encontró un elemento con la clase 'input_text'
+  if (inputExistente) {
+    console.log("ss")
+    // Crear un nuevo elemento textarea
+    var textareaNuevo = document.createElement('textarea');
+    
+    // Copiar atributos del input al textarea
+    textareaNuevo.className = 'otree-chat__input'; // Asignar la misma clase
+    //textareaNuevo.placeholder = inputExistente.placeholder; // Copiar placeholder si existe
+    //textareaNuevo.value = inputExistente.value; // Copiar valor si hay texto ingresado
+    
+    // Reemplazar el input con el textarea
+    inputExistente.parentNode.insertBefore(textareaNuevo,inputExistente.nextSibling);
+    inputExistente.style.display = "none"
+    textareaNuevo.style.width = "75%"
+    textareaNuevo.style.resize = "none"
+    textareaNuevo.rows = 1
+    textareaNuevo.setAttribute("id","text_area_chat_otree")
+    //textareaNuevo.nextSibling.style.marginTop = "20px"
+    
+    //inputExistente.style.height = "auto"; // Restaurar altura automática por si estaba definida
+    //inputExistente.style.padding = "10px"; // Ajustar el espaciado interno
+    //inputExistente.style.lineHeight = "1.6";
+    console.log(inputExistente)
+    // Añade un evento 'input' al elemento input
+    
+  } else {
+    console.log("No se encontró ningún elemento con la clase 'input_text'");
+  }
+}
+convertirATextarea()
+
+var inputExistente = document.getElementById('text_area_chat_otree');
+inputExistente.addEventListener('input', function() {
+    input_otree = document.querySelector('.otree-chat__input')
+    input_otree.value = inputExistente.value
+    
+
+    var rows = parseInt(inputExistente.getAttribute("rows"));
+    textarea.setAttribute("rows", "1");
+
+    if (rows < limitRows && inputExistente.scrollHeight > messageLastScrollHeight) {
+        rows++;
+    } else if (rows > 1 && inputExistente.scrollHeight < messageLastScrollHeight) {
+        rows--;
+    }
+
+    messageLastScrollHeight = inputExistente.scrollHeight;
+    inputExistente.setAttribute("rows", rows);
+
+});
+
 </script>
 
 {{ endblock }}

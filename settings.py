@@ -6,7 +6,7 @@ SESSION_CONFIGS = [
         name='gpt_chat',
         display_name="gpt_chat",
         app_sequence=['gpt_chat'],
-        num_demo_participants=3,
+        num_demo_participants=2,
     ),
     dict(
         name='ultimatum_with_gpt',
