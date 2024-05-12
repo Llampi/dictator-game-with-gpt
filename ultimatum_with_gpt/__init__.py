@@ -1,10 +1,23 @@
+
 from otree.api import *
+
+#open ai and json
+import json
+from openai import OpenAI
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+api_key = os.getenv("API_KEY")
+
 
 
 #Configuracion del archivo csv: 
 import csv
 archivo_csv = 'config.csv'
 datos = []
+
 with open(archivo_csv, newline='') as csvfile:
     lector_csv = csv.DictReader(csvfile)
     for fila in lector_csv:
@@ -17,10 +30,7 @@ endowment = datos[0]['endowment']
 
 
 
-#open ai and json
-import json
-from openai import OpenAI
-client = OpenAI(api_key="")
+client = OpenAI(api_key=api_key)
 
 doc = """
 Your app description

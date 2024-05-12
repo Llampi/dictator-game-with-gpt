@@ -13,6 +13,7 @@
             <div class="col-4 text-center"><b>Session code:</b>   {{player.session.code}} </div>
         </div>
         <div class="row mt-4"></div>
+        <div id="contador"></div>
         <div class="row border mb-4">
             <div class="col col-6 border border-2  border-dark p-4">
                 
@@ -81,8 +82,8 @@
                         
                     
                         <div class="chat-body" >
-                            <div class=" otree-chat__messages" id="chatBody">
-                            
+                            <div class="row otree-chat__messages" id="chatBodyContainer">
+                                <div class="col col-10" id="chatBody"> </div>
                             </div>
                             <!-- Aquí se mostrarán los mensajes -->
                         </div>
@@ -91,7 +92,7 @@
                     </div>
                     <div>
                         <div class="row"><div style="" class="col-9"><textarea type="text" id="messageInput" class="text_area_input" style="width: 100%; resize:none" rows="1" placeholder="" ></textarea></div>
-                        <div class="col-3"><input type="button" onclick="sendMessage()" value="Send" class="otree-chat__btn-send"></input></div>
+                        <div class="col-3"><input id="send_message_to_gpt" type="button" onclick="sendMessageGPT()" value="Send" class="otree-chat__btn-send"></input></div>
                         </div>
                     </div>
                 </div>
@@ -147,6 +148,7 @@
             // your code goes here
             message = data.message
             agregar_mesaje_de_gpt(message)
+            show_and_change_text_button_send_message_gpt()
         }
         else if (data.type == 'response')
         {
@@ -168,9 +170,10 @@
         {
             if('{{player.role}}' == 'Receiver')
             {
+                //console.log('sender_send')
                 ocultar_make_offer()
             }
-            
+            show_next_button_from_otree()
             guardar_historial(data)
         }
         else
@@ -214,7 +217,6 @@
     function aceptarOferta()
     {
         console.log("haz aceptado")
-        //reservarPuntos('oferta_recibida')
         liveSend({'type': 'response', 'response': 'accept' });
         reemplazar_botones_aceptar_rechazar('Accepted');
 
@@ -276,7 +278,27 @@
 
         //pasar_pagina()
     }
-    
+    function hide_next_button_from_otree()
+    {
+        
+        var botones = document.querySelectorAll('.otree-btn-next');
+        if (botones.length > 0) {
+            botones[0].style.display = "none"; 
+        } else {
+            console.log('No se encontró ningún botón con esa clase.');
+        }
+    }
+
+    function show_next_button_from_otree()
+    {
+        
+        var botones = document.querySelectorAll('.otree-btn-next');
+        if (botones.length > 0) {
+            botones[0].style.display = "block"; 
+        } else {
+            console.log('No se encontró ningún botón con esa clase.');
+        }
+    }
     function pasar_pagina()
     {
         console.log('No se encontró ningún botón con esa clase.');
@@ -383,7 +405,50 @@
         input_offer_button = document.getElementById('offer_input_button')
         input_offer_button.disabled = true
     }
+    function deshabilitar_interaccion_con_otro_jugador()
+    {
+        var chat_input = document.getElementById('text_area_chat_otree')
+        chat_input.disabled = true
+        var chat_button = document.getElementsByClassName('otree-chat__btn-send')
+        chat_button.disabled = true
+
+        var kept_points_sender = document.getElementById('kept_points')
+        if (kept_points_sender){kept_points_sender.disabled = true}
+
+        var button_continue_sender = document.getElementById('button_continue')
+        if (button_continue_sender){button_continue_sender.disabled = true}
+
+        var offer_input_receiver = document.getElementById('offer_input')
+        
+        if (offer_input_receiver){console.log(offer_input_receiver.value="ss");offer_input_receiver.disabed = true;}
+
+        var offer_send_button_receiver = document.getElementById('offer_input_button')
+        if (offer_send_button_receiver){offer_send_button_receiver.disabled = true}
+        
+    }
+
+    function habilitar_interaccion_con_otro_jugador()
+    {
+        var chat_input = document.getElementById('text_area_chat_otree')
+        chat_input.disabled = false
+        var chat_button = document.getElementsByClassName('otree-chat__btn-send')
+        chat_button.disabled = false
+
+        var kept_points_sender = document.getElementById('kept_points')
+        if (kept_points_sender){kept_points_sender.disabled = false}
+
+        var button_continue_sender = document.getElementById('button_continue')
+        if (button_continue_sender){button_continue_sender.disabled = false}
+
+        var offer_input_receiver = document.getElementById('offer_input')
+        if (offer_input_receiver){offer_input_receiver.disabed = false}
+
+        var offer_send_button_receiver = document.getElementById('offer_input_button')
+        if (offer_send_button_receiver){offer_send_button_receiver.disabled = false}
+    }
+    
     cargar_historial()
+
 </script>
 
 
@@ -394,15 +459,28 @@
 gptName = "Gpt"
 myName = "{{player.role}}"
 
+function hide_and_change_text_button_send_message_gpt()
+{
+    var input_button = document.getElementById('send_message_to_gpt')
+    input_button.value = "Wait;"
+    input_button.disabled = true
+}
+function show_and_change_text_button_send_message_gpt()
+{
+    var input_button = document.getElementById('send_message_to_gpt')
+    input_button.value = "Send"
+    input_button.disabled = false
+}
 
-function sendMessage() {
+function sendMessageGPT() {
     var messageInput = document.getElementById("messageInput");
     var message = messageInput.value;
     agregar_mesaje_de_usuario(message)
-    
 
+    
+    hide_and_change_text_button_send_message_gpt()
     liveSend({'type': 'chat_gpt', 'message': message });
-    //liveSend(message);
+    
 }
 
 /*
@@ -428,23 +506,44 @@ function agregar_nueva_linea_al_chat(message, nick)
 {
     if (message.trim() !== "") {
         var chatBody = document.getElementById("chatBody");
-        var newMessage = document.createElement("div");
-        //newMessage.className = "message";
-        //newMessage.textContent = nick +  ": " + message;
+
         var newMessage = document.createElement('div');
+        newMessage.classList.add('row')
         newMessage.className = "message";
-        var messageText = document.createElement('span');
+        
+        var nickElement = document.createElement('div');
+        nickElement.classList.add('col');
+        nickElement.textContent = nick + " : ";
+        nickElement.style.fontWeight = 'bold'; // Hacer el nick en negrita
+        nickElement.style.color = '#c37a36'; // Cambiar el color del nick
+        
+
+        
+
+        var messageText = document.createElement('div');
+        messageText.classList.add('col');
+        messageText.classList.add('col-11');
         messageText.textContent = message;
         //messageText.style.fontWeight = 'bold'; // Hacer el texto en negrita
         //messageText.style.color = 'blue'; // Cambiar el color del texto del nick
 
-        var nickElement = document.createElement('span');
-        nickElement.textContent = nick + " : ";
-        nickElement.style.fontWeight = 'bold'; // Hacer el nick en negrita
-        nickElement.style.color = '#c37a36'; // Cambiar el color del nick
+        
 
+        var copyElement = document.createElement('div')
+        copyElement.classList.add('col');
+        copyElement.classList.add('col-1');
+        copyElement.innerHTML = "<input type='button' value='📄' onclick='button_copiar_texto()'/>"
+
+
+        var row_text_content = document.createElement('div');
+        row_text_content.classList.add('row')
+
+
+        row_text_content.appendChild(messageText)
+        row_text_content.appendChild(copyElement)
         newMessage.appendChild(nickElement);
-        newMessage.appendChild(messageText);
+        newMessage.appendChild(row_text_content);
+        
         chatBody.appendChild(newMessage);
 
         // Limpiar el cuadro de entrada después de enviar el mensaje
@@ -456,7 +555,48 @@ function agregar_nueva_linea_al_chat(message, nick)
 }
 
 
+function button_copiar_texto() {
+  // Obtener el elemento actual
+  var elementoActual = document.activeElement; // o reemplaza document.activeElement por tu elemento específico
 
+  // Obtener el abuelo (padre del padre)
+  var padre = elementoActual.parentNode;
+  if (padre !== null) {
+    var abuelo = padre.parentNode;
+
+    // Obtener el primer hijo del abuelo
+    if (abuelo !== null) {
+      var primerHijoAbuelo = abuelo.firstElementChild;
+      if (primerHijoAbuelo !== null) {
+        texto_copiado = primerHijoAbuelo.textContent
+
+        //code for copy text
+        // create element
+        var elemento_temporal = document.createElement('textarea');
+        elemento_temporal.value = texto_copiado;
+        // Agregar el elemento al DOM para poder seleccionarlo
+        document.body.appendChild(elemento_temporal);
+        // Seleccionar el texto dentro del elemento temporal
+        elemento_temporal.select();
+        // Copiar el texto seleccionado al portapapeles
+        document.execCommand('copy');
+        // Eliminar el elemento temporal creado (opcional)
+        document.body.removeChild(elemento_temporal);
+
+        return 0;
+      } else {
+        console.log("El abuelo no tiene hijos.");
+        return null;
+      }
+    } else {
+      console.log("No se pudo encontrar el abuelo.");
+      return null;
+    }
+  } else {
+    console.log("No se pudo encontrar el padre.");
+    return null;
+  }
+}
 
 
 var textarea = document.getElementById('messageInput');
@@ -485,15 +625,12 @@ function convertirATextarea() {
 
   // Verificar si se encontró un elemento con la clase 'input_text'
   if (inputExistente) {
-    console.log("ss")
     // Crear un nuevo elemento textarea
     var textareaNuevo = document.createElement('textarea');
     
     // Copiar atributos del input al textarea
     textareaNuevo.className = 'otree-chat__input'; // Asignar la misma clase
-    //textareaNuevo.placeholder = inputExistente.placeholder; // Copiar placeholder si existe
-    //textareaNuevo.value = inputExistente.value; // Copiar valor si hay texto ingresado
-    
+
     // Reemplazar el input con el textarea
     inputExistente.parentNode.insertBefore(textareaNuevo,inputExistente.nextSibling);
     inputExistente.style.display = "none"
@@ -501,14 +638,7 @@ function convertirATextarea() {
     textareaNuevo.style.resize = "none"
     textareaNuevo.rows = 1
     textareaNuevo.setAttribute("id","text_area_chat_otree")
-    //textareaNuevo.nextSibling.style.marginTop = "20px"
-    
-    //inputExistente.style.height = "auto"; // Restaurar altura automática por si estaba definida
-    //inputExistente.style.padding = "10px"; // Ajustar el espaciado interno
-    //inputExistente.style.lineHeight = "1.6";
-    console.log(inputExistente)
-    // Añade un evento 'input' al elemento input
-    
+
   } else {
     console.log("No se encontró ningún elemento con la clase 'input_text'");
   }
@@ -534,7 +664,30 @@ inputExistente.addEventListener('input', function() {
     inputExistente.setAttribute("rows", rows);
 
 });
-
+hide_next_button_from_otree()
 </script>
 
+
+<script>
+    deshabilitar_interaccion_con_otro_jugador()
+    //setTimeout(habilitar_interaccion_con_otro_jugador, 10000);
+    //habilitar_interaccion_con_otro_jugador()
+    function mostrarContador() {
+        var segundos = 10;
+        var contadorElemento = document.getElementById('contador');
+
+        var intervalo = setInterval(function() {
+            contadorElemento.textContent = 'For the next few seconds, chat with the bot before interacting with the other participant: ' + segundos;
+            segundos--;
+
+            if (segundos < 0) {
+                clearInterval(intervalo);
+                // Llama a la función después de que termine el contador
+                habilitar_interaccion_con_otro_jugador();
+                contadorElemento.textContent = '';
+            }
+        }, 1000); // Intervalo de 1 segundo (1000 milisegundos)
+    }
+    mostrarContador()
+</script>
 {{ endblock }}

@@ -1,7 +1,12 @@
 from otree.api import *
 import json
 from openai import OpenAI
-client = OpenAI(api_key="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")
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+api_key = os.getenv("API_KEY")
+client = OpenAI(api_key=api_key)
 
 doc = """
 Your app description
