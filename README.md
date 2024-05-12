@@ -6,6 +6,8 @@
 
 ### Creación del entorno virtual (python 3.12)
 
+En una terminal:
+
 1. Clona este repositorio en tu máquina local:
 
 2. Dirígete a la ubicación donde crearás un entorno virtual
